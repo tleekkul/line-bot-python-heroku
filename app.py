@@ -11,13 +11,17 @@ from linebot.models import (
     MessageEvent, TextMessage, TextSendMessage,
 )
 
+import os
+
 app = Flask(__name__)
 
-line_bot_api = LineBotApi(os.environ['LINE_ACCESS_TOKEN']) #Your Channel Access Token
-handler = WebhookHandler(os.environ['LINE_SECRET']) #Your Channel Secret
+line_bot_api = LineBotApi(os.environ.get('LINE_ACCESS_TOKEN', '')) #Your Channel Access Token
+handler = WebhookHandler(os.environ.get('LINE_SECRET', '')) #Your Channel Secret
 
-@app.route("/callback", methods=['POST'])
+@app.route("/callback", methods=['POST', 'GET'])
 def callback():
+    if request.method == 'GET':
+        return 'Hi'
     # get X-Line-Signature header value
     signature = request.headers['X-Line-Signature']
 
@@ -42,6 +46,5 @@ def handle_text_message(event):
         TextSendMessage(text=text)) #reply the same message from user
     
 
-import os
 if __name__ == "__main__":
-    app.run(host='0.0.0.0',port=os.environ['PORT'])
+    app.run(host='0.0.0.0',port=os.environ.get('PORT', 80))
