@@ -62,10 +62,23 @@ def handle_text_message(event):
 
 def handle_coinmarketcap_response(r):
     resp = r.json()[0]
-    return 'Symbol: {symbol}\nUSD: ${usd}\nPercent Change 24h: {percent_change}'.format(
+    cost = '-'
+    pl = '-'
+    sign = ''
+    if resp['symbol'] == 'KNC':
+        cost = Decimal('1.5981')
+        price = get_usd_price(resp)
+        pl, sign = get_pl(price, cost)
+    elif resp['symbol'] == 'ETH':
+        cost = Decimal('268.462')
+        price = get_usd_price(resp)
+        pl, sign = get_pl(price, cost)
+    return 'Symbol: {symbol}\nUSD: ${usd}\nCost: ${cost}\nP/L: {sign}{pl}%'.format(
         symbol=resp['symbol'],
         usd=resp['price_usd'], 
-        percent_change=resp['percent_change_24h']
+        cost=cost,
+        sign=sign,
+        pl=pl
     )
 
 
@@ -76,13 +89,22 @@ def request_coinmarketcap(coin):
 def calculate_profit():
     cost = Decimal('1.5981')
     r = requests.get('https://api.coinmarketcap.com/v1/ticker/kyber-network/')
-    price = Decimal(r.json()[0]['price_usd']).quantize(Decimal('1.0000'))
-    pl = (price-cost)*100/cost
-    sign = '+' if pl > 0 else ''
+    price = get_usd_price(r.json())
+    pl, sign = get_pl(price, cost)
     pl_in_thb = pl/100 * 120000
-    return 'Cost:\t\t ${}\nPrice:\t\t ${}\nP/L:\t\t {}{}%\nP/L(THB):\t {}{}'.format(
+    return 'Cost: ${}\nPrice: ${}\nP/L: {}{}%\nP/L(THB): {}{}'.format(
         cost, price, sign, pl.quantize(Decimal('1.00')), 
         sign, pl_in_thb.quantize(Decimal('1.00')))
+
+
+def get_usd_price(r):
+    return Decimal(r[0]['price_usd']).quantize(Decimal('1.0000'))
+
+
+def get_pl(price, cost):
+    pl = ((price-cost)*100/cost).quantize(Decimal('1.0000'))
+    sign = '+' if pl > 0 else ''
+    return pl, sign
 
 
 if __name__ == "__main__":
