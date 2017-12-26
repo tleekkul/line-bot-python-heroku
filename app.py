@@ -67,11 +67,11 @@ def handle_coinmarketcap_response(r):
     sign = ''
     if resp['symbol'] == 'KNC':
         cost = Decimal('1.5981')
-        price = get_usd_price(resp)
+        price = get_usd_price([resp])
         pl, sign = get_pl(price, cost)
     elif resp['symbol'] == 'ETH':
         cost = Decimal('268.462')
-        price = get_usd_price(resp)
+        price = get_usd_price([resp])
         pl, sign = get_pl(price, cost)
     return 'Symbol: {symbol}\nUSD: ${usd}\nCost: ${cost}\nP/L: {sign}{pl}%'.format(
         symbol=resp['symbol'],
