@@ -51,7 +51,7 @@ def handle_text_message(event):
     elif text.lower() == 'bch':
         response = request_coinmarketcap('bitcoin-cash')
     elif text.lower() == 'profit':
-        response = calculate_profit()
+        response = calculate_eth_profit()
     elif text.lower() == 'help':
         response = 'Possible commands: [knc, eth, btc, bch, profit]'
 
@@ -83,6 +83,21 @@ def calculate_profit():
     return 'Cost:\t\t ${}\nPrice:\t\t ${}\nP/L:\t\t {}{}%\nP/L(THB):\t {}{}'.format(
         cost, price, sign, pl.quantize(Decimal('1.00')), 
         sign, pl_in_thb.quantize(Decimal('1.00')))
+
+
+def calculate_eth_profit():
+    cost = Decimal('120000')
+    amount = Decimal('11.079')
+    r = requests.get('https://bx.in.th/api/')
+    eth = r.json()['21']
+    last_price = Decimal(eth['last_price'])
+    value = amount * last_price
+    pl = value-cost
+    pl_percent = pl*100/cost
+    sign = '+' if pl > 0 else ''
+    return 'Cost:\t\t {} THB\nCurrent:\t\t {} THB\nP/L:\t\t {}{} THB({}{}%)'.format(
+        cost, value, sign, pl.quantize(Decimal('1.00')), 
+        sign, pl_percent.quantize(Decimal('1.00')))
 
 
 if __name__ == "__main__":
